@@ -1,0 +1,60 @@
+import torch
+import torch.nn as nn
+import torch.optim as optim
+
+X = torch.randn(1000, 1)
+y = (X > 0).float()
+
+class SimpleNet(nn.Module):
+
+    def __init__(self):
+        super().__init__()
+
+        self.hidden = nn.Linear(1, 5)
+        self.relu = nn.ReLU()
+        self.output = nn.Linear(5, 1)
+        self.sigmoid = nn.Sigmoid()
+
+    def forward(self,x):
+
+        x = self.relu(self.hidden(x))
+        x = self.sigmoid(self.output(x))
+
+        return x
+
+
+model = SimpleNet()
+criterion = nn.BCELoss()
+optimizer = optim.SGD(model.parameters(), lr=0.1)
+
+for epoch in range(500):
+    optimizer.zero_grad()
+    predictions = model(X)
+    loss = criterion(predictions, y)
+    loss.backward()
+    optimizer.step()
+
+    if epoch %100 == 0:
+        print(f'Эпоха {epoch}, Ошибка: {loss.item():.4f}')
+
+n=1
+while (n!=0):
+
+    b = float(input())
+    test_number = torch.tensor([[ b ]])
+    model.eval()
+
+    with torch.no_grad():
+
+        prediction = model(test_number)
+        prob = prediction.item()
+
+        if prediction < 0.5:
+
+            confidence =  (1 - prob)*100
+            print(f'Число {b} отрицательно.\nУвереность:{confidence:.0f}%')
+
+        else:
+
+            confidence = prob*100
+            print(f'Число {b} положительно.\nУвереность:{confidence:.0f}%')
